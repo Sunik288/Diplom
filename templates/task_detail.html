@@ -5,7 +5,7 @@
     <p><strong>Title:</strong> {{ task.title }}</p>
     <p><strong>Description:</strong> {{ task.description }}</p>
     <p><strong>Priority:</strong> {{ task.priority }}</p>
-    <p>Deadline: {{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'No deadline' }}</p>  <!-- ✅ Safe conversion -->
+    <p>Deadline: {{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'No deadline' }}</p>
     {% if task.file_path %}
     <a href="{{ url_for('static', filename=task.file_path) }}" class="btn btn-primary">Download File</a>
     {% endif %}
