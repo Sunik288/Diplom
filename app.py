@@ -25,8 +25,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# ---------------- ROUTES ----------------
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -153,6 +151,8 @@ def edit_task(task_id):
         return redirect(url_for('dashboard'))
 
     return render_template('edit_task.html', task=task)
+
+
 
 
 @app.route('/delete_task/<int:task_id>', methods=['POST'])
