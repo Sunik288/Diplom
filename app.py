@@ -1,9 +1,11 @@
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from datetime import datetime, timedelta
 from models import db, User, Task
 from forms import RegisterForm
 from forms import LoginForm
+from sqlalchemy import case
+
 
 
 app = Flask(__name__)
@@ -37,8 +39,26 @@ def dashboard():
         flash('Session expired. Please log in again.', 'warning')
         return redirect(url_for('login'))
 
-    tasks = Task.query.filter_by(user_id=session['user_id']).all()
-    return render_template('dashboard.html', tasks=tasks, username=session.get('username'))
+    filter_status = request.args.get('filter', 'all')
+
+    # Define priority order
+    priority_order = case(
+        (Task.priority == 'High', 1),
+        (Task.priority == 'Medium', 2),
+        (Task.priority == 'Low', 3),
+        else_=4
+    )
+
+    if filter_status == 'done':
+        tasks = Task.query.filter_by(user_id=session['user_id'], status=True).order_by(priority_order).all()
+    elif filter_status == 'undone':
+        tasks = Task.query.filter_by(user_id=session['user_id'], status=False).order_by(priority_order).all()
+    else:
+        tasks = Task.query.filter_by(user_id=session['user_id']).order_by(Task.status.asc(), priority_order).all()
+
+    return render_template('dashboard.html', tasks=tasks, username=session.get('username'), filter_status=filter_status)
+
+
 
 
 
@@ -118,7 +138,9 @@ def add_task():
         description=description,
         priority=priority,
         deadline=deadline,
+        status=False,
         user_id=session['user_id']
+
     )
 
     db.session.add(new_task)
@@ -126,6 +148,36 @@ def add_task():
 
     flash('Task added successfully!', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/mark_done/<int:task_id>', methods=['POST'])
+@login_required
+def mark_done(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    if task.user_id != session['user_id']:
+        flash("You don't have permission to update this task.", 'danger')
+        return redirect(url_for('dashboard'))
+
+    task.status = True
+    db.session.commit()
+    flash('Task marked as Done!', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/toggle_task/<int:task_id>', methods=['POST'])
+def toggle_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    task.status = not task.status
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "status": task.status,
+        "title": task.title
+    })
+
+
+
+
 
 
 @app.route('/edit_task/<int:task_id>', methods=['GET', 'POST'])

@@ -15,5 +15,6 @@ class Task(db.Model):
     description = db.Column(db.Text, nullable=True)
     priority = db.Column(db.String(50), nullable=False, default="Medium")
     deadline = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.Boolean, nullable=False, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
