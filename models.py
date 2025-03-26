@@ -15,6 +15,5 @@ class Task(db.Model):
     description = db.Column(db.Text, nullable=True)
     priority = db.Column(db.String(50), nullable=False, default="Medium")
     deadline = db.Column(db.DateTime, nullable=True)
-    file_path = db.Column(db.String(300), nullable=True)  # ✅ Add file_path column
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 

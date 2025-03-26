@@ -1,19 +1,17 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_login import LoginManager, login_user, login_required, logout_user
-import os
 from datetime import datetime, timedelta
+from models import db, User, Task
+from forms import RegisterForm
+from forms import LoginForm
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
-app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['SECRET_KEY'] = 'sunik123'
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
-
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-from models import db, User, Task
 
 db.init_app(app)
 
@@ -45,7 +43,6 @@ def dashboard():
     return render_template('dashboard.html', tasks=tasks, username=session.get('username'))
 
 
-from forms import RegisterForm
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -74,8 +71,6 @@ def register():
 
     return render_template('register.html', form=form)
 
-
-from forms import LoginForm
 
 
 @app.route('/login', methods=['GET', 'POST'])
